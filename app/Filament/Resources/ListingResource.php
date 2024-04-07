@@ -2,16 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ListingResource\Pages;
-use App\Filament\Resources\ListingResource\RelationManagers;
-use App\Models\Listing;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Listing;
+use Filament\Forms\Set;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\ListingResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\FileUpload;
+use App\Filament\Resources\ListingResource\RelationManagers;
+
 
 class ListingResource extends Resource
 {
@@ -25,13 +29,13 @@ class ListingResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('title')
                     ->required()
+                    ->AfterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
+                    ->live(debounce: 250)
                     ->maxLength(255),
                 Forms\Components\TextInput::make('slug')
-                    ->required()
-                    ->maxLength(255),
+                    ->disabled(),
                 Forms\Components\Textarea::make('description')
-                    ->required()
-                    ->columnSpanFull(),
+                    ->required(),
                 Forms\Components\TextInput::make('address')
                     ->required()
                     ->maxLength(255),
@@ -51,24 +55,21 @@ class ListingResource extends Resource
                     ->required()
                     ->numeric()
                     ->default(0),
-                Forms\Components\Textarea::make('attachments')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('full_support_available')
-                    ->required()
-                    ->numeric()
+                Forms\Components\Checkbox::make('full_support_available')
                     ->default(0),
-                Forms\Components\TextInput::make('gym_area_available')
-                    ->required()
-                    ->numeric()
+                Forms\Components\Checkbox::make('gym_area_available')
                     ->default(0),
-                Forms\Components\TextInput::make('mini_cafe_available')
-                    ->required()
-                    ->numeric()
+                Forms\Components\Checkbox::make('mini_cafe_available')
                     ->default(0),
-                Forms\Components\TextInput::make('cinema_available')
-                    ->required()
-                    ->numeric()
+                Forms\Components\Checkbox::make('cinema_available')
                     ->default(0),
+                FileUpload::make('attachments')
+                    ->directory('listings')
+                    ->image()
+                    ->openable()
+                    ->multiple()
+                    ->reorderable()
+                    ->appendFiles()
             ]);
     }
 
