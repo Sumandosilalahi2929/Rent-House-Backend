@@ -15,7 +15,7 @@ use App\Filament\Resources\ListingResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\ListingResource\RelationManagers;
-
+use Filament\Support\Enums\FontWeight;
 
 class ListingResource extends Resource
 {
@@ -78,11 +78,7 @@ class ListingResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('address')
-                    ->searchable(),
+                    ->weight(FontWeight::Bold),
                 Tables\Columns\TextColumn::make('sqft')
                     ->numeric()
                     ->sortable(),
@@ -93,20 +89,9 @@ class ListingResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('price_per_day')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('full_support_available')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('gym_area_available')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('mini_cafe_available')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('cinema_available')
-                    ->numeric()
-                    ->sortable(),
+                    ->money('USD')
+                    ->sortable()
+                    ->weight(FontWeight::Bold),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -115,16 +100,16 @@ class ListingResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
+                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
