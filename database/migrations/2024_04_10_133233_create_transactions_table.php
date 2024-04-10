@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('total_days')->unsigned()->default(0);
             $table->integer('fee')->unsigned()->default(0);
             $table->integer('total_price')->unsigned()->default(0);
-            $table->enum('status', ['waiting','approved','canceled'])->default(['waiting']);
+            $table->enum('status', ['waiting','approved','canceled'])->default('waiting');
             $table->timestamps();
         });
     }
