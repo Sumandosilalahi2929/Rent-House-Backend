@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ListingResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\FileUpload;
-use App\Filament\Resources\ListingResource\RelationManagers;
 use Filament\Support\Enums\FontWeight;
 
 class ListingResource extends Resource
@@ -112,7 +111,7 @@ class ListingResource extends Resource
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
