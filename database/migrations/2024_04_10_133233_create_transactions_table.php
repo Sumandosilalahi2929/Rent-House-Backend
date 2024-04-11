@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
+            $table->foreignId('listing_id')->constrained();
             $table->date('start_date');
             $table->date('end_date');
             $table->integer('price_per_day')->unsigned()->default(0);
