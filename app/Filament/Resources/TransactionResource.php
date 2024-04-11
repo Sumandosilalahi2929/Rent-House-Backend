@@ -2,16 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TransactionResource\Pages;
-use App\Filament\Resources\TransactionResource\RelationManagers;
-use App\Models\Transaction;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\Transaction;
+use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\TransactionResource\Pages;
+use App\Filament\Resources\TransactionResource\RelationManagers;
+use Filament\Notifications\Notification;
 
 class TransactionResource extends Resource
 {
@@ -29,30 +33,7 @@ class TransactionResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('user_id')
-                    ->relationship('user', 'name')
-                    ->required(),
-                Forms\Components\DatePicker::make('start_date')
-                    ->required(),
-                Forms\Components\DatePicker::make('end_date')
-                    ->required(),
-                Forms\Components\TextInput::make('price_per_day')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\TextInput::make('total_days')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\TextInput::make('fee')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\TextInput::make('total_price')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\TextInput::make('status')
-                    ->required(),
+              
             ]);
     }
 
@@ -62,40 +43,47 @@ class TransactionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight(FontWeight::Bold),
                 Tables\Columns\TextColumn::make('start_date')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('price_per_day')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('total_days')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('fee')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('total_price')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->money('USD')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->weight(FontWeight::Bold),
+                Tables\Columns\TextColumn::make('status')->badge()->color(fn(string $state): string => match($state){
+                    'waiting' => 'gray',
+                    'approved' => 'info',
+                    'canceled' => 'danger',
+                }),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                ->options([
+                    'waiting' => 'Waiting',
+                    'approved' => 'Approved',
+                    'canceled' => 'Canceled'
+                    ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Action::make('approve')
+                ->button()
+                ->color('success')
+                ->requiresConfirmation()
+                ->action(function(Transaction $transaction){
+                     Transaction::find($transaction->id)->update([
+                        'status' =>'approved',
+                     ]);
+                     Notification::make()->success()->title('Transaction Approved!')->body('Transaction has been approved successfully')->icon('heroicon-o-check')->send();
+                })
+                ->hidden(fn(Transaction $transaction) => $transaction->status !== 'waiting')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
