@@ -29,7 +29,6 @@ class TransactionController extends Controller
                           ->where('end_date', '>', $request->end_date);
                     });
     })->count();
-    
     if ($runningTransactionCount >= $listing->max_person) {
         throw new HttpResponseException(
             response()->json([
@@ -48,6 +47,25 @@ class TransactionController extends Controller
         return response()->json([
             'success'=> true,
             'message' => 'Listing is ready to book',
+        ]);
+    }
+
+    public function store(Store $request)
+    {
+        $this->_fullyBookedCheker($request);
+
+        $transaction = Transaction::create([
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'listing_id' => $request->listing_id,
+            'user_id' => auth()->user()->id,
+        ]);
+        $transaction->listing;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'New transaction created',
+            'data' => $transaction,
         ]);
     }
 }
