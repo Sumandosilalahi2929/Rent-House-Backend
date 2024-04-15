@@ -12,6 +12,17 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 
 class TransactionController extends Controller
 {
+    public function index()
+    {
+        $transactions = Transaction::with('listing')->whereUserId(auth()->id())->paginate();
+
+        return response()->json([
+            'success' => true,
+            'message'  => 'Get all my transactions',
+            'data' => $transactions,
+        ]);
+    }
+
     private function _fullyBookedCheker(Store $request)
     {
         $listing = Listing::find($request->listing_id);
