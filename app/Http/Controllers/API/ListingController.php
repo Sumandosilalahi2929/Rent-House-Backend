@@ -19,12 +19,12 @@ class ListingController extends Controller
             'data' => $listings,
         ]);
     }
-    public function show(Listing $listing): JsonResponse
+    public function show(Listing $Listing): JsonResponse
     {
         return response()->json([
             'success'=> true,
             'message' => 'Get detail listing',
-            'data' => $listing,
+            'data' => $Listing,
         ]);
     }
 }

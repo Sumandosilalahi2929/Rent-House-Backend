@@ -10,31 +10,26 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ListingResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\FileUpload;
-use Filament\Support\Enums\FontWeight;
+use App\Filament\Resources\ListingResource\RelationManagers;
 
 class ListingResource extends Resource
 {
     protected static ?string $model = Listing::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-briefcase';
+    protected static ?string $navigationIcon = 'heroicon-o-home-modern';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')
-                    ->required()
-                    ->AfterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
-                    ->live(debounce: 250)
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('slug')
-                    ->disabled(),
-                Forms\Components\Textarea::make('description')
-                    ->required(),
+                Forms\Components\TextInput::make('title')->required()->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))->live(debounce: 250),
+                Forms\Components\TextInput::make('slug')->disabled(),
+                Forms\Components\Textarea::make('description')->required(),
                 Forms\Components\TextInput::make('address')
                     ->required()
                     ->maxLength(255),
@@ -54,7 +49,7 @@ class ListingResource extends Resource
                     ->required()
                     ->numeric()
                     ->default(0),
-                Forms\Components\Checkbox::make('full_support_available')
+                Forms\Components\Checkbox::make('full_suppport_available')
                     ->default(0),
                 Forms\Components\Checkbox::make('gym_area_available')
                     ->default(0),
@@ -66,9 +61,7 @@ class ListingResource extends Resource
                     ->directory('listings')
                     ->image()
                     ->openable()
-                    ->multiple()
-                    ->reorderable()
-                    ->appendFiles()
+                    ->multiple()->reorderable()->appendFiles()
             ]);
     }
 
@@ -76,45 +69,29 @@ class ListingResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->weight(FontWeight::Bold),
-                Tables\Columns\TextColumn::make('sqft')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('title')->weight(FontWeight::Bold),
+                Tables\Columns\TextColumn::make('sqft'),
+                Tables\Columns\TextColumn::make('wifi_speed'),
+                Tables\Columns\TextColumn::make('max_person'),
+                Tables\Columns\TextColumn::make('price_per_day')->weight(FontWeight::Bold)->money('USD')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('wifi_speed')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('max_person')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('price_per_day')
-                    ->money('USD')
-                    ->sortable()
-                    ->weight(FontWeight::Bold),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime(),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\DeleteAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->color('warning'),
                 Tables\Actions\ForceDeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
-
             ])
             ->bulkActions([
-                    Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ]);
     }
